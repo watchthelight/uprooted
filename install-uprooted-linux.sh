@@ -1,5 +1,5 @@
 #!/bin/bash
-# Uprooted Linux Installer v0.3.43
+# Uprooted Linux Installer v0.3.44
 # Standalone bash installer for systems without the GUI installer.
 #
 # Usage: ./install-uprooted-linux.sh [--root-path /path/to/Root.AppImage]
@@ -7,34 +7,64 @@
 #        ./install-uprooted-linux.sh --uninstall
 #        ./install-uprooted-linux.sh --repair [--prebuilt]
 #        ./install-uprooted-linux.sh --diagnose
+#        ./install-uprooted-linux.sh --desktop   (also create a .desktop file)
 #
 # This script:
 # 1. Finds Root.AppImage (or uses --root-path)
 # 2. Builds (or downloads) profiler + hook artifacts
 # 3. Deploys to ~/.local/share/uprooted/
 # 4. Creates a wrapper script with CLR profiler env vars
-# 5. Creates a .desktop file for launching Root with Uprooted
-# 6. Patches HTML files in Root's profile directory
-# 7. Adds env vars to ~/.profile as fallback for non-systemd sessions
+# 5. Patches HTML files in Root's profile directory
+# 6. Adds env vars to ~/.profile as fallback for non-systemd sessions
 
 set -euo pipefail
 
 INSTALL_DIR="$HOME/.local/share/uprooted"
 PROFILE_DIR="$HOME/.local/share/Root Communications/Root/profile/default"
 PROFILER_GUID="{D1A6F5A0-1234-4567-89AB-CDEF01234567}"
-VERSION="0.3.43"
-ARTIFACTS_URL="https://github.com/watchthelight/uprooted/releases/download/v${VERSION}/uprooted-linux-artifacts.tar.gz"
+VERSION="0.3.44"
 
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BOLD='\033[1m'
 NC='\033[0m' # No Color
 
 log()   { echo -e "${GREEN}[+]${NC} $1"; }
 warn()  { echo -e "${YELLOW}[!]${NC} $1"; }
 error() { echo -e "${RED}[-]${NC} $1"; }
 die()   { error "$1"; exit 1; }
+
+# ── Resolve latest release version from GitHub API ──
+
+resolve_latest_version() {
+    if ! command -v curl &>/dev/null; then
+        warn "curl not found, using bundled version v$VERSION"
+        return
+    fi
+
+    local api_url="https://api.github.com/repos/watchthelight/uprooted/releases/latest"
+    local response
+    response=$(curl -sL --max-time 10 "$api_url" 2>/dev/null) || {
+        warn "Could not reach GitHub API, using bundled version v$VERSION"
+        return
+    }
+
+    local tag
+    tag=$(echo "$response" | grep -o '"tag_name"[[:space:]]*:[[:space:]]*"[^"]*"' | grep -o '"v[^"]*"' | tr -d '"')
+
+    if [[ -z "$tag" ]]; then
+        warn "Could not parse latest version from GitHub API, using bundled v$VERSION"
+        return
+    fi
+
+    local latest="${tag#v}"
+    if [[ "$latest" != "$VERSION" ]]; then
+        log "Latest release: v$latest (script bundled: v$VERSION)"
+        VERSION="$latest"
+    fi
+}
 
 # ── Diagnose function ──
 
@@ -119,7 +149,7 @@ run_diagnose() {
             log "    $exec_line"
         fi
     else
-        warn "  root-uprooted.desktop: missing"
+        warn "  root-uprooted.desktop: missing (create with --desktop flag)"
     fi
 
     local plasma_env="$HOME/.config/plasma-workspace/env/uprooted.sh"
@@ -353,7 +383,7 @@ run_uninstall() {
         log "Cleaned Uprooted env vars from ~/.profile"
     fi
 
-    # 5. Remove .desktop file
+    # 5. Remove .desktop file (backwards compat -- clean up even if we no longer create by default)
     local desktop="$HOME/.local/share/applications/root-uprooted.desktop"
     if [[ -f "$desktop" ]]; then
         rm -f "$desktop"
@@ -377,6 +407,7 @@ run_uninstall() {
 ROOT_PATH=""
 MODE="install"
 USE_PREBUILT=false
+CREATE_DESKTOP=false
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --root-path) ROOT_PATH="$2"; shift 2 ;;
@@ -396,8 +427,12 @@ while [[ $# -gt 0 ]]; do
             USE_PREBUILT=true
             shift
             ;;
+        --desktop)
+            CREATE_DESKTOP=true
+            shift
+            ;;
         --help|-h)
-            echo "Usage: $0 [--root-path /path/to/Root.AppImage] [--prebuilt]"
+            echo "Usage: $0 [--root-path /path/to/Root.AppImage] [--prebuilt] [--desktop]"
             echo "       $0 --uninstall"
             echo "       $0 --repair [--prebuilt]"
             echo "       $0 --diagnose"
@@ -407,6 +442,7 @@ while [[ $# -gt 0 ]]; do
             echo "Options:"
             echo "  --root-path    Path to Root.AppImage (auto-detected if not given)"
             echo "  --prebuilt     Download pre-built artifacts instead of building from source"
+            echo "  --desktop      Create a .desktop file for launching Root with Uprooted"
             echo "  --uninstall    Remove Uprooted completely (patches, env vars, files)"
             echo "  --repair       Re-deploy artifacts and re-patch HTML files"
             echo "  --diagnose     Check installation health and runtime state"
@@ -434,6 +470,7 @@ find_root() {
         "$HOME/Downloads/Root.AppImage"
         "$HOME/.local/bin/Root.AppImage"
         "/opt/Root.AppImage"
+        "/usr/bin/Root.AppImage"
         "$HOME/.local/bin/Root"
     )
 
@@ -452,7 +489,17 @@ find_root() {
         return 0
     fi
 
-    die "Could not find Root.AppImage. Use --root-path to specify its location."
+    echo ""
+    error "Could not find Root.AppImage in any of these locations:"
+    for c in "${candidates[@]}"; do
+        echo "    $c"
+    done
+    echo ""
+    echo "  Tip: locate it manually with:"
+    echo "    find / -name 'Root.AppImage' -o -name 'Root' -type f 2>/dev/null"
+    echo ""
+    echo "  Then re-run with: $0 --root-path /path/to/Root.AppImage"
+    exit 1
 }
 
 # ── Check prerequisites (build from source) ──
@@ -488,7 +535,11 @@ check_prereqs() {
 # ── Download pre-built artifacts ──
 
 download_prebuilt() {
-    log "Downloading pre-built artifacts..."
+    resolve_latest_version
+
+    local artifacts_url="https://github.com/watchthelight/uprooted/releases/download/v${VERSION}/uprooted-linux-artifacts.tar.gz"
+
+    log "Downloading pre-built artifacts (v$VERSION)..."
 
     if ! command -v curl &>/dev/null && ! command -v wget &>/dev/null; then
         die "Neither curl nor wget found. Install one and try again."
@@ -499,14 +550,48 @@ download_prebuilt() {
     local tarball="$tmpdir/uprooted-linux-artifacts.tar.gz"
 
     if command -v curl &>/dev/null; then
-        if ! curl -fSL -o "$tarball" "$ARTIFACTS_URL" 2>/dev/null; then
+        local http_code
+        http_code=$(curl -sL -w "%{http_code}" -o "$tarball" --max-time 120 "$artifacts_url" 2>/dev/null) || http_code="000"
+
+        if [[ "$http_code" == "404" ]]; then
             rm -rf "$tmpdir"
-            die "Failed to download pre-built artifacts from $ARTIFACTS_URL"
+            error "Version v$VERSION not found on GitHub (HTTP 404)."
+            error "  Check available releases: https://github.com/watchthelight/uprooted/releases"
+            die "  Run with --diagnose for more info."
+        elif [[ "$http_code" != "200" && "$http_code" != "000" ]]; then
+            rm -rf "$tmpdir"
+            error "Failed to download artifacts (HTTP $http_code)."
+            error "  URL: $artifacts_url"
+            die "  Run with --diagnose for more info."
+        elif [[ "$http_code" == "000" ]]; then
+            rm -rf "$tmpdir"
+            error "Network error — could not reach GitHub."
+            die "  Check your internet connection and try again."
         fi
     else
-        if ! wget -q -O "$tarball" "$ARTIFACTS_URL" 2>/dev/null; then
+        if ! wget -q -O "$tarball" "$artifacts_url" 2>/dev/null; then
             rm -rf "$tmpdir"
-            die "Failed to download pre-built artifacts from $ARTIFACTS_URL"
+            error "Failed to download pre-built artifacts."
+            error "  URL: $artifacts_url"
+            die "  Run with --diagnose for more info."
+        fi
+    fi
+
+    # Validate tarball (catch corrupt downloads before tar fails cryptically)
+    if command -v file &>/dev/null; then
+        if ! file "$tarball" | grep -qi "gzip"; then
+            rm -rf "$tmpdir"
+            error "Downloaded file is not a valid gzip archive (corrupt download?)."
+            die "  Try again or download manually from: $artifacts_url"
+        fi
+    else
+        # Fallback: check gzip magic bytes (1f 8b)
+        local magic
+        magic=$(od -A n -t x1 -N 2 "$tarball" 2>/dev/null | tr -d ' ')
+        if [[ "$magic" != "1f8b" ]]; then
+            rm -rf "$tmpdir"
+            error "Downloaded file is not a valid gzip archive (corrupt download?)."
+            die "  Try again or download manually from: $artifacts_url"
         fi
     fi
 
@@ -536,15 +621,24 @@ build_artifacts() {
 
     # Build TypeScript layer
     log "Building TypeScript layer..."
-    (cd "$script_dir" && pnpm install --frozen-lockfile && pnpm build)
+    if ! (cd "$script_dir" && pnpm install --frozen-lockfile && pnpm build); then
+        error "TypeScript build failed."
+        return 1
+    fi
 
     # Build Hook DLL
     log "Building UprootedHook.dll..."
-    dotnet build "$script_dir/hook" -c Release -o "$script_dir/hook/_out"
+    if ! dotnet build "$script_dir/hook" -c Release -o "$script_dir/hook/_out"; then
+        error "Hook DLL build failed."
+        return 1
+    fi
 
     # Build profiler .so
     log "Compiling libuprooted_profiler.so..."
-    gcc -shared -fPIC -O2 -o "$script_dir/libuprooted_profiler.so" "$script_dir/tools/uprooted_profiler_linux.c"
+    if ! gcc -shared -fPIC -O2 -o "$script_dir/libuprooted_profiler.so" "$script_dir/tools/uprooted_profiler_linux.c"; then
+        error "Profiler build failed."
+        return 1
+    fi
 
     # Deploy
     mkdir -p "$INSTALL_DIR"
@@ -569,12 +663,15 @@ deploy_artifacts() {
         # Auto-detect: if we're not inside the full repo, fall back to prebuilt
         local script_dir
         script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-        if [[ ! -f "$script_dir/package.json" ]]; then
+        if [[ ! -f "$script_dir/package.json" ]] || [[ ! -d "$script_dir/hook" ]] || [[ ! -d "$script_dir/tools" ]]; then
             log "Standalone script detected (no repo found). Using pre-built artifacts."
             download_prebuilt
         else
             check_prereqs
-            build_artifacts
+            if ! build_artifacts; then
+                warn "Build from source failed. Falling back to pre-built artifacts..."
+                download_prebuilt
+            fi
         fi
     fi
 }
@@ -664,7 +761,7 @@ WRAPPER
     log "Wrapper script created: $wrapper"
 }
 
-# ── Create .desktop file ──
+# ── Create .desktop file (opt-in via --desktop) ──
 
 create_desktop_file() {
     local apps_dir="$HOME/.local/share/applications"
@@ -809,7 +906,10 @@ run_repair() {
     # Re-set env vars
     set_env_vars
     create_wrapper
-    create_desktop_file
+
+    if [[ "$CREATE_DESKTOP" == true ]]; then
+        create_desktop_file
+    fi
 
     # Strip existing patches and re-apply
     log "Stripping existing HTML patches..."
@@ -819,8 +919,18 @@ run_repair() {
     patch_html
 
     echo ""
-    log "Repair complete!"
-    log "Restart Root to activate Uprooted."
+    echo -e "  ${YELLOW}┌──────────────────────────────────────────────────────────────┐${NC}"
+    echo -e "  ${YELLOW}│${NC}"
+    echo -e "  ${YELLOW}│${NC}  ${GREEN}Repair complete!${NC}"
+    echo -e "  ${YELLOW}│${NC}"
+    echo -e "  ${YELLOW}│${NC}  You ${BOLD}MUST${NC} log out and log back in for changes to take effect."
+    echo -e "  ${YELLOW}│${NC}"
+    echo -e "  ${YELLOW}│${NC}  Or launch immediately:"
+    echo -e "  ${YELLOW}│${NC}    ${GREEN}$INSTALL_DIR/launch-root.sh${NC}"
+    echo -e "  ${YELLOW}│${NC}"
+    echo -e "  ${YELLOW}│${NC}  Trouble? Run: ${GREEN}$0 --diagnose${NC}"
+    echo -e "  ${YELLOW}│${NC}"
+    echo -e "  ${YELLOW}└──────────────────────────────────────────────────────────────┘${NC}"
     echo ""
 }
 
@@ -850,16 +960,24 @@ find_root
 deploy_artifacts
 set_env_vars
 create_wrapper
-create_desktop_file
+
+if [[ "$CREATE_DESKTOP" == true ]]; then
+    create_desktop_file
+fi
+
 patch_html
 
 echo ""
-log "Installation complete!"
-log ""
-log "To activate Uprooted, either:"
-log "  1. Log out and back in, then launch Root normally"
-log "  2. Run: $INSTALL_DIR/launch-root.sh"
-log "  3. Find 'Root (Uprooted)' in your application menu"
-log ""
-log "If Uprooted isn't loading, run: $0 --diagnose"
+echo -e "  ${YELLOW}┌──────────────────────────────────────────────────────────────┐${NC}"
+echo -e "  ${YELLOW}│${NC}"
+echo -e "  ${YELLOW}│${NC}  ${GREEN}Installation complete!${NC}"
+echo -e "  ${YELLOW}│${NC}"
+echo -e "  ${YELLOW}│${NC}  You ${BOLD}MUST${NC} log out and log back in for Uprooted to activate."
+echo -e "  ${YELLOW}│${NC}"
+echo -e "  ${YELLOW}│${NC}  Or launch immediately:"
+echo -e "  ${YELLOW}│${NC}    ${GREEN}$INSTALL_DIR/launch-root.sh${NC}"
+echo -e "  ${YELLOW}│${NC}"
+echo -e "  ${YELLOW}│${NC}  Trouble? Run: ${GREEN}$0 --diagnose${NC}"
+echo -e "  ${YELLOW}│${NC}"
+echo -e "  ${YELLOW}└──────────────────────────────────────────────────────────────┘${NC}"
 echo ""

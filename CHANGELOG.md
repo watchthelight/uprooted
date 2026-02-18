@@ -4,6 +4,19 @@ All notable changes to Uprooted are documented here. This file mirrors the [GitH
 
 ---
 
+## [v0.3.44](https://github.com/watchthelight/uprooted/releases/tag/v0.3.44) — 2026-02-18
+
+### Improvements
+- Linux installer auto-fetches latest release from GitHub — stale scripts no longer download wrong version
+- Download errors now show specific HTTP status and actionable fix suggestions
+- Validates tarball integrity before extraction (catches corrupt downloads)
+- Build-from-source falls back to pre-built artifacts on failure instead of dying
+- `find_root()` lists all searched paths on failure with a locate hint
+- Post-install messaging uses prominent box: "You MUST log out and log back in"
+
+### Changed
+- `.desktop` file creation is now opt-in (`--desktop` flag) — no more unwanted app menu entries
+
 ## [v0.3.43](https://github.com/watchthelight/uprooted/releases/tag/v0.3.43) — 2026-02-18
 
 ### Fixed

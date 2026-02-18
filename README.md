@@ -10,7 +10,7 @@
   <a href="https://uprooted.sh"><img src="https://img.shields.io/badge/web-uprooted.sh-2D7D46?style=flat" alt="website" /></a>
   <a href="https://github.com/watchthelight/uprooted/releases/latest"><img src="https://img.shields.io/badge/download-latest-2D7D46?style=flat" alt="download" /></a>
   <a href="https://github.com/watchthelight/uprooted/releases"><img src="https://img.shields.io/github/downloads/watchthelight/uprooted/total?style=flat&color=2D7D46&label=downloads" alt="downloads" /></a>
-  <img src="https://img.shields.io/badge/version-0.3.43-2D7D46?style=flat" alt="version" />
+  <img src="https://img.shields.io/badge/version-0.3.44-2D7D46?style=flat" alt="version" />
   <img src="https://img.shields.io/badge/license-custom-blue?style=flat" alt="license" />
   <img src="https://img.shields.io/badge/platform-windows | linux-lightgrey?style=flat" alt="platform" />
 </p>

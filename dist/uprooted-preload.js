@@ -210,7 +210,7 @@ var Uprooted = (() => {
   var sentryBlockerPlugin = {
     name: "sentry-blocker",
     description: "Blocks Sentry error tracking to protect your privacy",
-    version: "0.2.5",
+    version: "0.3.44",
     authors: [{ name: "Uprooted" }],
     start() {
       blockedCount = 0;
@@ -336,6 +336,30 @@ var Uprooted = (() => {
       }
     },
     {
+      name: "cosmic-smoothie",
+      display_name: "Cosmic Smoothie",
+      description: "Deep purple space",
+      author: "watchthelight",
+      variables: {
+        "--rootsdk-brand-primary": "#7328BA",
+        "--rootsdk-brand-secondary": "#8A3FD2",
+        "--rootsdk-brand-tertiary": "#5C1E98",
+        "--rootsdk-background-primary": "#0A041E",
+        "--rootsdk-background-secondary": "#100822",
+        "--rootsdk-background-tertiary": "#060216",
+        "--rootsdk-input": "#080318",
+        "--rootsdk-border": "#302040",
+        "--rootsdk-link": "#A15DE6",
+        "--rootsdk-muted": "#584870"
+      },
+      preview_colors: {
+        background: "#0A041E",
+        text: "#F4ECF8",
+        accent: "#7328BA",
+        border: "#302040"
+      }
+    },
+    {
       name: "custom",
       display_name: "Custom",
       description: "User-defined accent and background colors",
@@ -418,7 +442,7 @@ var Uprooted = (() => {
   var themes_default2 = {
     name: "themes",
     description: "Built-in theme engine for Root Communications",
-    version: "0.2.5",
+    version: "0.3.44",
     authors: [{ name: "Uprooted" }],
     settings: {
       theme: {
@@ -1171,7 +1195,7 @@ var Uprooted = (() => {
   var settings_panel_default = {
     name: "settings-panel",
     description: "In-app settings panel injected into Root's settings sidebar",
-    version: "0.2.5",
+    version: "0.3.44",
     authors: [{ name: "Uprooted" }],
     css: void 0,
     // CSS is loaded from panel.css via the build system
@@ -1190,20 +1214,7 @@ var Uprooted = (() => {
 
   // src/plugins/link-embeds/providers.ts
   var metadataCache = /* @__PURE__ */ new Map();
-  var FETCH_TIMEOUT = 8e3;
-  var LOG = "[Uprooted:link-embeds]";
-  var DEBUG_URL = "http://localhost:9876/log";
-  function dbgProvider(msg) {
-    const line = `[${(/* @__PURE__ */ new Date()).toLocaleTimeString()}] ${msg}`;
-    console.log(`${LOG} ${msg}`);
-    try {
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", DEBUG_URL, true);
-      xhr.setRequestHeader("Content-Type", "text/plain");
-      xhr.send(`${LOG} ${line}`);
-    } catch {
-    }
-  }
+  var FETCH_TIMEOUT = 5e3;
   function parseYouTubeId(url) {
     try {
       const u = new URL(url);
@@ -1247,25 +1258,19 @@ var Uprooted = (() => {
   }
   async function fetchMetadata(url) {
     if (metadataCache.has(url)) {
-      dbgProvider(` Cache hit for ${url}`);
       return metadataCache.get(url);
     }
     try {
       const videoId = parseYouTubeId(url);
       if (videoId) {
-        dbgProvider(` Fetching YouTube metadata for ${url} (id: ${videoId})`);
         const data2 = await fetchYouTubeMetadata(url, videoId);
         metadataCache.set(url, data2);
-        dbgProvider(` YouTube metadata:`, data2?.title ?? "(no title)");
         return data2;
       }
-      dbgProvider(` Fetching generic metadata for ${url}`);
       const data = await fetchGenericMetadata(url);
       metadataCache.set(url, data);
-      dbgProvider(` Generic metadata:`, data ? `"${data.title}"` : "null (no data)");
       return data;
-    } catch (err) {
-      dbgProvider(` fetchMetadata failed for ${url}:`, err);
+    } catch {
       metadataCache.set(url, null);
       return null;
     }
@@ -1299,50 +1304,25 @@ var Uprooted = (() => {
   async function fetchGenericMetadata(url) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
-    let resp;
-    try {
-      resp = await fetch(url, {
-        signal: controller.signal,
-        headers: { Accept: "text/html" }
-      });
-    } catch (err) {
-      clearTimeout(timer);
-      dbgProvider(` Fetch failed for ${url}:`, err);
-      return null;
-    }
-    if (!resp.ok) {
-      clearTimeout(timer);
-      dbgProvider(` Non-OK response for ${url}: ${resp.status}`);
-      return null;
-    }
-    const contentType = resp.headers.get("content-type") ?? "";
-    if (!contentType.includes("text/html")) {
-      clearTimeout(timer);
-      dbgProvider(` Non-HTML content-type for ${url}: ${contentType}`);
-      return null;
-    }
-    let html = "";
-    try {
-      const reader = resp.body?.getReader();
-      if (!reader) {
-        html = (await resp.text()).slice(0, 5e4);
-      } else {
-        const decoder = new TextDecoder();
-        const MAX_BYTES = 5e4;
-        while (html.length < MAX_BYTES) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          html += decoder.decode(value, { stream: true });
-        }
-        reader.cancel().catch(() => {
-        });
-      }
-    } catch (err) {
-      clearTimeout(timer);
-      dbgProvider(` Body read failed for ${url}:`, err);
-      if (!html) return null;
-    }
+    const resp = await fetch(url, {
+      signal: controller.signal,
+      headers: { Accept: "text/html" }
+    });
     clearTimeout(timer);
+    if (!resp.ok) return null;
+    const contentType = resp.headers.get("content-type") ?? "";
+    if (!contentType.includes("text/html")) return null;
+    const reader = resp.body?.getReader();
+    if (!reader) return null;
+    let html = "";
+    const decoder = new TextDecoder();
+    const MAX_BYTES = 5e4;
+    while (html.length < MAX_BYTES) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      html += decoder.decode(value, { stream: true });
+    }
+    reader.cancel();
     const og = parseOpenGraph(html);
     if (!og.title) {
       const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
@@ -1489,24 +1469,8 @@ var Uprooted = (() => {
 
   // src/plugins/link-embeds/index.ts
   var LINK_PATTERN = /^https?:\/\//;
-  var LOG2 = "[Uprooted:link-embeds]";
   var observer2 = null;
   var processedLinks = /* @__PURE__ */ new WeakSet();
-  var DEBUG_URL2 = "http://localhost:9876/log";
-  var _rawFetch = window.fetch.bind(window);
-  function dbg(msg) {
-    const line = `[${(/* @__PURE__ */ new Date()).toLocaleTimeString()}] ${msg}`;
-    console.log(`${LOG2} ${msg}`);
-    try {
-      _rawFetch(DEBUG_URL2, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain" },
-        body: `${LOG2} ${line}`
-      }).catch(() => {
-      });
-    } catch {
-    }
-  }
   function getPluginConfig() {
     const config = window.__UPROOTED_SETTINGS__?.plugins?.["link-embeds"]?.config;
     return {
@@ -1538,64 +1502,27 @@ var Uprooted = (() => {
     if (processedLinks.has(anchor)) return;
     processedLinks.add(anchor);
     const href = anchor.href;
-    if (!LINK_PATTERN.test(href)) {
-      dbg(`Skip non-http: ${href.slice(0, 60)}`);
-      return;
-    }
-    if (anchor.closest('[id^="uprooted-"], [data-uprooted]')) {
-      dbg(`Skip uprooted-ui link: ${href.slice(0, 60)}`);
-      return;
-    }
+    if (!LINK_PATTERN.test(href)) return;
+    if (anchor.closest('[id^="uprooted-"], [data-uprooted]')) return;
     const config = getPluginConfig();
     const isYouTube = /(?:youtube\.com|youtu\.be)/.test(href);
-    if (isYouTube && !config.youtube) {
-      dbg(`YouTube disabled, skip: ${href.slice(0, 60)}`);
-      return;
-    }
-    if (!isYouTube && !config.websites) {
-      dbg(`Websites disabled, skip: ${href.slice(0, 60)}`);
-      return;
-    }
-    if (countEmbedsInContext(anchor) >= config.maxEmbedsPerMessage) {
-      dbg(`Max embeds reached, skip: ${href.slice(0, 60)}`);
-      return;
-    }
-    dbg(`Processing: ${href}`);
+    if (isYouTube && !config.youtube) return;
+    if (!isYouTube && !config.websites) return;
+    if (countEmbedsInContext(anchor) >= config.maxEmbedsPerMessage) return;
     const data = await fetchMetadata(href);
-    if (!data) {
-      dbg(`No metadata for: ${href.slice(0, 60)}`);
-      return;
-    }
-    if (!anchor.isConnected) {
-      dbg(`Anchor gone from DOM: ${href.slice(0, 60)}`);
-      return;
-    }
-    if (countEmbedsInContext(anchor) >= config.maxEmbedsPerMessage) {
-      dbg(`Max embeds (post-fetch), skip: ${href.slice(0, 60)}`);
-      return;
-    }
-    dbg(`Got metadata: "${data.title}" [${data.type}]`);
+    if (!data) return;
+    if (!anchor.isConnected) return;
+    if (countEmbedsInContext(anchor) >= config.maxEmbedsPerMessage) return;
     const card = createEmbedCard(data);
     const { parent, ref } = findInsertionPoint(anchor);
     try {
       parent.insertBefore(card, ref);
-      dbg(`INSERTED embed for: ${href.slice(0, 60)}`);
-    } catch (err) {
-      dbg(`Insert failed, trying fallback...`);
-      try {
-        anchor.parentNode?.insertBefore(card, anchor.nextSibling);
-        dbg(`INSERTED (fallback) for: ${href.slice(0, 60)}`);
-      } catch (err2) {
-        dbg(`ALL insertions failed for: ${href.slice(0, 60)}`);
-      }
+    } catch {
+      anchor.parentNode?.insertBefore(card, anchor.nextSibling);
     }
   }
-  var mutationCount = 0;
   function scanForLinks(root) {
     const anchors = root instanceof HTMLElement ? root.querySelectorAll("a[href]") : [];
-    if (anchors.length > 0) {
-      dbg(`Scan: ${anchors.length} link(s) in node <${root.tagName?.toLowerCase?.() ?? "?"}>`);
-    }
     for (const anchor of anchors) {
       if (!processedLinks.has(anchor) && LINK_PATTERN.test(anchor.href)) {
         processLink(anchor);
@@ -1606,24 +1533,18 @@ var Uprooted = (() => {
     }
   }
   function onMutations(mutations) {
-    let addedElements = 0;
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
         if (node.nodeType === Node.ELEMENT_NODE) {
-          addedElements++;
           scanForLinks(node);
         }
       }
-    }
-    mutationCount++;
-    if (addedElements > 0 && mutationCount <= 20) {
-      dbg(`Mutation #${mutationCount}: ${addedElements} element(s) added`);
     }
   }
   var link_embeds_default = {
     name: "link-embeds",
     description: "Discord-style link previews for URLs in chat",
-    version: "0.2.5",
+    version: "0.3.44",
     authors: [{ name: "Uprooted" }],
     settings: {
       youtube: {
@@ -1645,33 +1566,24 @@ var Uprooted = (() => {
       }
     },
     start() {
-      dbg(`Context: ${location.href}`);
-      dbg(`Title: "${document.title}"`);
-      dbg(`Body children: ${document.body?.children.length ?? 0}`);
       observer2 = new MutationObserver(onMutations);
       observer2.observe(document.body, { childList: true, subtree: true });
-      const existingLinks = document.querySelectorAll("a[href]");
-      dbg(`Started -- ${existingLinks.length} existing link(s)`);
-      for (const a of Array.from(existingLinks).slice(0, 15)) {
-        dbg(`  existing: ${a.href.slice(0, 80)} ("${a.textContent?.slice(0, 30) ?? ""}")`);
-      }
-      if (existingLinks.length > 15) dbg(`  ...and ${existingLinks.length - 15} more`);
       scanForLinks(document.body);
+      console.log("[Uprooted] Link embeds started");
     },
     stop() {
       if (observer2) {
         observer2.disconnect();
         observer2 = null;
       }
-      const removed = document.querySelectorAll(".uprooted-embed");
-      removed.forEach((el) => el.remove());
+      document.querySelectorAll(".uprooted-embed").forEach((el) => el.remove());
       clearCache();
-      dbg(`Stopped (removed ${removed.length} embeds)`);
+      console.log("[Uprooted] Link embeds stopped");
     }
   };
 
   // src/core/preload.ts
-  var VERSION = true ? "0.2.5" : "dev";
+  var VERSION = true ? "0.3.44" : "dev";
   function main() {
     try {
       const settings = window.__UPROOTED_SETTINGS__;

@@ -10,7 +10,7 @@ import type { PluginLoader } from "../../core/pluginLoader.js";
 export default {
   name: "settings-panel",
   description: "In-app settings panel injected into Root's settings sidebar",
-  version: "0.3.43",
+  version: "0.3.44",
   authors: [{ name: "Uprooted" }],
 
   css: undefined, // CSS is loaded from panel.css via the build system

@@ -132,7 +132,7 @@ function onMutations(mutations: MutationRecord[]): void {
 export default {
   name: "link-embeds",
   description: "Discord-style link previews for URLs in chat",
-  version: "0.3.43",
+  version: "0.3.44",
   authors: [{ name: "Uprooted" }],
 
   settings: {

@@ -28,7 +28,7 @@ function isSentryUrl(url: string | URL | Request): boolean {
 const sentryBlockerPlugin: UprootedPlugin = {
   name: "sentry-blocker",
   description: "Blocks Sentry error tracking to protect your privacy",
-  version: "0.3.43",
+  version: "0.3.44",
   authors: [{ name: "Uprooted" }],
 
   start() {
