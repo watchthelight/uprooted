@@ -79,7 +79,7 @@ var Uprooted = (() => {
     async startAll() {
       for (const [name] of this.plugins) {
         const pluginSettings = this.settings.plugins[name];
-        const enabled = pluginSettings?.enabled ?? true;
+        const enabled = pluginSettings?.enabled ?? false;
         if (enabled) {
           await this.start(name);
         }
@@ -210,7 +210,7 @@ var Uprooted = (() => {
   var sentryBlockerPlugin = {
     name: "sentry-blocker",
     description: "Blocks Sentry error tracking to protect your privacy",
-    version: "0.3.44",
+    version: "0.3.6-rc",
     authors: [{ name: "Uprooted" }],
     start() {
       blockedCount = 0;
@@ -261,6 +261,51 @@ var Uprooted = (() => {
     }
   };
   var sentry_blocker_default = sentryBlockerPlugin;
+
+  // src/plugins/silent-typing/index.ts
+  var originalFetch2 = null;
+  var originalXHROpen2 = null;
+  function isTypingIndicatorUrl(url) {
+    const urlStr = typeof url === "string" ? url : url instanceof URL ? url.href : url.url;
+    return urlStr.includes("api.rootapp.com/root.v2.MessageGrpcService/SetTypingIndicator");
+  }
+  var silentTypingPlugin = {
+    name: "silent-typing",
+    description: "Hide that you are typing",
+    version: "0.1.0",
+    authors: [{ name: "Kurumi Nanase" }],
+    start() {
+      originalFetch2 = window.fetch;
+      window.fetch = function(input, init) {
+        if (isTypingIndicatorUrl(input)) {
+          console.log(`[Uprooted:Silent typing] Blocked typing indicator`);
+          return Promise.resolve(new Response(null, { status: 200 }));
+        }
+        return originalFetch2.call(window, input, init);
+      };
+      originalXHROpen2 = XMLHttpRequest.prototype.open;
+      XMLHttpRequest.prototype.open = function(method, url, ...rest) {
+        if (isTypingIndicatorUrl(url)) {
+          console.log(`[Uprooted:Silent typing] Blocked typing indicator`);
+          return originalXHROpen2.call(this, method, "about:blank", ...rest);
+        }
+        return originalXHROpen2.call(this, method, url, ...rest);
+      };
+      console.log("[Uprooted:Silent typing] Network intercepts installed");
+    },
+    stop() {
+      if (originalFetch2) {
+        window.fetch = originalFetch2;
+        originalFetch2 = null;
+      }
+      if (originalXHROpen2) {
+        XMLHttpRequest.prototype.open = originalXHROpen2;
+        originalXHROpen2 = null;
+      }
+      console.log("[Uprooted:Silent typing] Intercepts removed");
+    }
+  };
+  var silent_typing_default = silentTypingPlugin;
 
   // src/api/native.ts
   function removeCssVariable(name) {
@@ -442,7 +487,7 @@ var Uprooted = (() => {
   var themes_default2 = {
     name: "themes",
     description: "Built-in theme engine for Root Communications",
-    version: "0.3.44",
+    version: "0.3.6-rc",
     authors: [{ name: "Uprooted" }],
     settings: {
       theme: {
@@ -1195,7 +1240,7 @@ var Uprooted = (() => {
   var settings_panel_default = {
     name: "settings-panel",
     description: "In-app settings panel injected into Root's settings sidebar",
-    version: "0.3.44",
+    version: "0.3.6-rc",
     authors: [{ name: "Uprooted" }],
     css: void 0,
     // CSS is loaded from panel.css via the build system
@@ -1236,13 +1281,20 @@ var Uprooted = (() => {
   }
   function parseOpenGraph(html) {
     const result = {};
-    const metaRegex = /<meta\s+(?:[^>]*?\s)?(?:property|name)\s*=\s*["']([^"']+)["'][^>]*?\scontent\s*=\s*["']([^"']*)["'][^>]*?\/?>/gi;
+    const attrBridge = `(?:\\s+[a-zA-Z_][\\w.:-]*\\s*=\\s*(?:"[^"]*"|'[^']*'))*`;
+    const metaRegex = new RegExp(
+      `<meta\\s+(?:\\s*[a-zA-Z_][\\w.:-]*\\s*=\\s*(?:"[^"]*"|'[^']*'))*\\s*(?:property|name)\\s*=\\s*["']([^"']+)["']${attrBridge}\\s+content\\s*=\\s*["']([^"']*)["'][^>]*/?>`,
+      "gi"
+    );
     let match;
     while ((match = metaRegex.exec(html)) !== null) {
       const [, key, value] = match;
       result[key.toLowerCase()] = value;
     }
-    const metaRegexReverse = /<meta\s+(?:[^>]*?\s)?content\s*=\s*["']([^"']*)["'][^>]*?\s(?:property|name)\s*=\s*["']([^"']+)["'][^>]*?\/?>/gi;
+    const metaRegexReverse = new RegExp(
+      `<meta\\s+(?:\\s*[a-zA-Z_][\\w.:-]*\\s*=\\s*(?:"[^"]*"|'[^']*'))*\\s*content\\s*=\\s*["']([^"']*)["']${attrBridge}\\s+(?:property|name)\\s*=\\s*["']([^"']+)["'][^>]*/?>`,
+      "gi"
+    );
     while ((match = metaRegexReverse.exec(html)) !== null) {
       const [, value, key] = match;
       const k = key.toLowerCase();
@@ -1544,7 +1596,7 @@ var Uprooted = (() => {
   var link_embeds_default = {
     name: "link-embeds",
     description: "Discord-style link previews for URLs in chat",
-    version: "0.3.44",
+    version: "0.3.6-rc",
     authors: [{ name: "Uprooted" }],
     settings: {
       youtube: {
@@ -1583,7 +1635,7 @@ var Uprooted = (() => {
   };
 
   // src/core/preload.ts
-  var VERSION = true ? "0.3.44" : "dev";
+  var VERSION = true ? "0.3.6-rc" : "dev";
   function main() {
     try {
       const settings = window.__UPROOTED_SETTINGS__;
@@ -1601,6 +1653,7 @@ var Uprooted = (() => {
       loader2.register(themes_default2);
       loader2.register(settings_panel_default);
       loader2.register(link_embeds_default);
+      loader2.register(silent_typing_default);
       if (settings.customCss) {
         injectCss("uprooted-custom", settings.customCss);
       }

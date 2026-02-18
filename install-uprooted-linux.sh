@@ -1,5 +1,5 @@
 #!/bin/bash
-# Uprooted Linux Installer v0.3.44
+# Uprooted Linux Installer v0.3.6-rc
 # Standalone bash installer for systems without the GUI installer.
 #
 # Usage: ./install-uprooted-linux.sh [--root-path /path/to/Root.AppImage]
@@ -22,7 +22,7 @@ set -euo pipefail
 INSTALL_DIR="$HOME/.local/share/uprooted"
 PROFILE_DIR="$HOME/.local/share/Root Communications/Root/profile/default"
 PROFILER_GUID="{D1A6F5A0-1234-4567-89AB-CDEF01234567}"
-VERSION="0.3.44"
+VERSION="0.3.6-rc"
 
 # Colors
 RED='\033[0;31m'
@@ -465,6 +465,7 @@ find_root() {
         fi
     fi
 
+    # 1. Exact well-known paths (fastest check)
     local candidates=(
         "$HOME/Applications/Root.AppImage"
         "$HOME/Downloads/Root.AppImage"
@@ -482,21 +483,119 @@ find_root() {
         fi
     done
 
-    # Try which
+    # 2. Glob for variant filenames (versioned, renamed, etc.) in common directories
+    local search_dirs=(
+        "$HOME/Applications"
+        "$HOME/Downloads"
+        "$HOME/.local/bin"
+        "$HOME/Desktop"
+        "$HOME"
+        "/opt"
+        "/usr/bin"
+        "/usr/local/bin"
+    )
+    for dir in "${search_dirs[@]}"; do
+        [[ -d "$dir" ]] || continue
+        for f in "$dir"/Root*.AppImage "$dir"/root*.AppImage "$dir"/Root*.appimage; do
+            if [[ -f "$f" ]]; then
+                ROOT_PATH="$f"
+                log "Found Root at: $ROOT_PATH"
+                return 0
+            fi
+        done
+    done
+
+    # 3. Search .desktop files for Root's Exec= path
+    local desktop_dirs=(
+        "$HOME/.local/share/applications"
+        "/usr/share/applications"
+        "/usr/local/share/applications"
+        "/var/lib/flatpak/exports/share/applications"
+        "$HOME/.local/share/flatpak/exports/share/applications"
+    )
+    for dir in "${desktop_dirs[@]}"; do
+        [[ -d "$dir" ]] || continue
+        for desktop_file in "$dir"/*.desktop; do
+            [[ -f "$desktop_file" ]] || continue
+            # Only consider desktop files that mention Root in Name or filename
+            if ! grep -qiE '^Name=.*Root' "$desktop_file" 2>/dev/null \
+               && [[ "$(basename "$desktop_file")" != *[Rr]oot* ]]; then
+                continue
+            fi
+            local exec_path
+            exec_path=$(grep -m1 '^Exec=' "$desktop_file" 2>/dev/null | sed 's/^Exec=//;s/ %[fFuUdDnNickvm]//g;s/ *$//')
+            if [[ -n "$exec_path" && -f "$exec_path" ]]; then
+                ROOT_PATH="$exec_path"
+                log "Found Root via .desktop file: $ROOT_PATH"
+                return 0
+            fi
+        done
+    done
+
+    # 4. Check running Root processes via /proc
+    for pid_dir in /proc/[0-9]*/; do
+        local exe
+        exe=$(readlink "${pid_dir}exe" 2>/dev/null) || continue
+        case "$exe" in
+            *Root*.AppImage|*Root*.appimage|*/Root)
+                if [[ -f "$exe" ]]; then
+                    ROOT_PATH="$exe"
+                    log "Found Root via running process: $ROOT_PATH"
+                    return 0
+                fi
+                ;;
+        esac
+    done
+
+    # 5. Try PATH lookup
     if command -v Root &>/dev/null; then
-        ROOT_PATH="$(which Root)"
+        ROOT_PATH="$(command -v Root)"
         log "Found Root in PATH: $ROOT_PATH"
         return 0
     fi
 
+    # 6. Try locate (fast indexed search)
+    if command -v locate &>/dev/null; then
+        local located
+        located=$(locate -i -l 1 "Root.AppImage" 2>/dev/null || true)
+        if [[ -n "$located" && -f "$located" ]]; then
+            ROOT_PATH="$located"
+            log "Found Root via locate: $ROOT_PATH"
+            return 0
+        fi
+        located=$(locate -i -l 1 --regexp '[Rr]oot.*\.[Aa]pp[Ii]mage$' 2>/dev/null || true)
+        if [[ -n "$located" && -f "$located" ]]; then
+            ROOT_PATH="$located"
+            log "Found Root via locate: $ROOT_PATH"
+            return 0
+        fi
+    fi
+
+    # 7. Shallow find in $HOME (depth-limited to stay fast)
+    if command -v find &>/dev/null; then
+        local found
+        found=$(find "$HOME" -maxdepth 4 -iname "Root*.AppImage" -type f -print -quit 2>/dev/null)
+        if [[ -n "$found" && -f "$found" ]]; then
+            ROOT_PATH="$found"
+            log "Found Root at: $ROOT_PATH"
+            return 0
+        fi
+    fi
+
+    # Nothing found
     echo ""
-    error "Could not find Root.AppImage in any of these locations:"
-    for c in "${candidates[@]}"; do
-        echo "    $c"
-    done
+    error "Could not find Root.AppImage."
+    echo ""
+    echo "  Searched:"
+    echo "    - Common locations (~/Applications, ~/Downloads, ~/.local/bin, /opt)"
+    echo "    - Glob patterns for Root*.AppImage in common directories"
+    echo "    - .desktop files in application directories"
+    echo "    - Running Root processes (/proc)"
+    echo "    - PATH, locate database"
+    echo "    - find in \$HOME (depth 4)"
     echo ""
     echo "  Tip: locate it manually with:"
-    echo "    find / -name 'Root.AppImage' -o -name 'Root' -type f 2>/dev/null"
+    echo "    find / -iname 'Root*.AppImage' 2>/dev/null"
     echo ""
     echo "  Then re-run with: $0 --root-path /path/to/Root.AppImage"
     exit 1

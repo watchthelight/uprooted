@@ -1,6 +1,6 @@
 {
   "name": "uprooted",
-  "version": "0.3.44",
+  "version": "0.3.6-rc",
   "description": "A client mod framework for Root Communications",
   "private": true,
   "type": "module",
