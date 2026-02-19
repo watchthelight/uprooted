@@ -4,36 +4,38 @@ import Layout from "../layouts/Layout.astro";
 
 <Layout title="uprooted">
   <div class="page">
-    <div class="columns">
-      <div class="left">
-        <h1>uprooted <span class="version">0.3.4</span></h1>
-        <p class="sub">a client mod framework for root communications.</p>
+    <div class="header">
+      <h1>uprooted <span class="version">0.4.0</span></h1>
+      <p class="sub">a client mod framework for root communications.</p>
+    </div>
 
-        <ul class="features">
-          <li>custom themes <span class="tag">working</span></li>
-          <li>sentry blocker <span class="tag">working</span></li>
-          <li>plugins <span class="tag">working</span></li>
-          <li>bridge api <span class="tag tag-planned">planned</span></li>
-          <li>settings injection <span class="tag">working</span></li>
-        </ul>
+    <div class="features-grid">
+      <div class="feature"><span class="fname">custom themes</span><span class="tag">working</span></div>
+      <div class="feature"><span class="fname">sentry blocker</span><span class="tag">working</span></div>
+      <div class="feature"><span class="fname">plugins</span><span class="tag">working</span></div>
+      <div class="feature"><span class="fname">bridge api</span><span class="tag">working</span></div>
+      <div class="feature"><span class="fname">settings injection</span><span class="tag">working</span></div>
+      <div class="feature"><span class="fname">link embeds</span><span class="tag tag-beta">beta</span></div>
+      <div class="feature"><span class="fname">message logger</span><span class="tag tag-beta">beta</span></div>
+      <div class="feature"><span class="fname">auto-updater</span><span class="tag">working</span></div>
+      <div class="feature"><span class="fname">silent typing</span><span class="tag tag-beta">beta</span></div>
+      <div class="feature"><span class="fname">clearurls</span><span class="tag">working</span></div>
+    </div>
 
-        <a href="https://github.com/watchthelight/uprooted/releases/latest" class="download-btn">download</a>
+    <p class="blurb">
+      <strong>working beta.</strong> themes and sentry blocker ship by default. all features are configurable from root's native settings panel.
+      root's <a href="https://root.gg/terms">terms</a> prohibit reverse engineering — we believe cosmetic mods can coexist with that policy.
+    </p>
 
-        <nav>
-          <a href="https://github.com/watchthelight/uprooted">source</a>
-          <span class="dot">&middot;</span>
-          <a href="https://rootapp.gg/AC0ILwUxgQqJ2MOSMXdGjw">server</a>
-          <span class="dot">&middot;</span>
-          <a href="https://github.com/watchthelight/uprooted/blob/main/LICENSE" class="dim">license</a>
-        </nav>
-      </div>
-
-      <div class="right">
-        <div class="policy">
-          <p>uprooted is a <strong>working beta</strong>. custom themes and the sentry blocker plugin ship with the framework. everything is configurable from Root's native settings panel.</p>
-          <p>root's <a href="https://root.gg/terms">terms</a> prohibit reverse engineering and modification of the service. we believe cosmetic client mods can coexist with that policy.</p>
-        </div>
-      </div>
+    <div class="cta">
+      <a href="https://github.com/watchthelight/uprooted/releases/latest" class="download-btn">download</a>
+      <nav>
+        <a href="https://github.com/watchthelight/uprooted">source</a>
+        <span class="dot">&middot;</span>
+        <a href="https://rootapp.gg/AC0ILwUxgQqJ2MOSMXdGjw">server</a>
+        <span class="dot">&middot;</span>
+        <a href="https://github.com/watchthelight/uprooted/blob/main/LICENSE" class="dim">license</a>
+      </nav>
     </div>
 
     <div class="tos-box">
@@ -43,46 +45,45 @@ import Layout from "../layouts/Layout.astro";
         <li><strong>do not discuss</strong> uprooted in Root's public channels, servers, or support.</li>
         <li>violations will result in your UUID being <strong>permanently blacklisted</strong>.</li>
       </ol>
-      <p class="tos-note">if you want to share uprooted, send them a link to the <a href="https://github.com/watchthelight/uprooted">repository</a>.</p>
+      <p class="tos-note">to share uprooted, send a link to the <a href="https://github.com/watchthelight/uprooted">repository</a>.</p>
     </div>
 
     <p class="footer dim">not affiliated with root communications.</p>
   </div>
+
+  <div class="mobile-block">
+    <p>sorry, uprooted is only available on windows and linux.</p>
+  </div>
 </Layout>
 
 <style>
+  .mobile-block {
+    display: none;
+  }
+
   .page {
     position: relative;
     z-index: 1;
-    max-width: 860px;
+    max-width: 680px;
     margin: 0 auto;
     padding: 0 32px;
     height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    gap: 20px;
   }
 
-  .columns {
+  .header {
     display: flex;
-    gap: 64px;
-    align-items: flex-start;
-  }
-
-  .left {
-    flex: 0 0 auto;
-  }
-
-  .right {
-    flex: 1;
-    padding-top: 4px;
+    flex-direction: column;
+    gap: 4px;
   }
 
   h1 {
     font-size: 22px;
     font-weight: 700;
     letter-spacing: 0.04em;
-    margin-bottom: 6px;
     color: var(--text);
   }
 
@@ -93,36 +94,69 @@ import Layout from "../layouts/Layout.astro";
     letter-spacing: 0.02em;
   }
 
+  .sub {
+    color: var(--dim);
+    font-size: 13px;
+  }
+
+  /* 2-column feature grid */
+  .features-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 32px;
+    padding: 16px 0;
+    border-top: 1px solid var(--faint);
+    border-bottom: 1px solid var(--faint);
+  }
+
+  .feature {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text);
+    min-width: 0;
+  }
+
+  .fname {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .tag {
+    flex-shrink: 0;
     font-size: 10px;
     color: var(--green);
     border: 1px solid rgba(106, 154, 110, 0.3);
     padding: 1px 6px;
-    margin-left: 6px;
     letter-spacing: 0.04em;
+    white-space: nowrap;
   }
 
-  .tag-planned {
+  .tag-beta {
     color: #c89040;
     border-color: rgba(200, 144, 64, 0.3);
   }
 
-  .sub {
-    color: var(--dim);
+  /* inline blurb */
+  .blurb {
     font-size: 13px;
-    margin-bottom: 20px;
+    line-height: 1.65;
+    color: var(--dim);
   }
 
-  .features {
-    list-style: none;
-    font-size: 13px;
+  .blurb strong {
     color: var(--text);
-    margin-bottom: 20px;
   }
 
-  .features li::before {
-    content: "- ";
-    color: var(--dim);
+  /* CTA row: download + nav inline */
+  .cta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
   }
 
   .download-btn {
@@ -134,11 +168,11 @@ import Layout from "../layouts/Layout.astro";
     font-weight: 700;
     letter-spacing: 0.04em;
     padding: 8px 24px;
-    margin-bottom: 16px;
     text-decoration: none;
     border: none;
     cursor: pointer;
     transition: background 0.15s;
+    flex-shrink: 0;
   }
 
   .download-btn:hover {
@@ -159,27 +193,11 @@ import Layout from "../layouts/Layout.astro";
     color: var(--dim);
   }
 
-  .policy {
-    font-size: 13px;
-    line-height: 1.65;
-    color: var(--dim);
-    border-left: 2px solid var(--dim);
-    padding-left: 16px;
-  }
-
-  .policy strong {
-    color: var(--text);
-  }
-
-  .policy p + p {
-    margin-top: 12px;
-  }
-
+  /* ToS box */
   .tos-box {
-    margin-top: 32px;
     border: 1px solid rgba(200, 80, 80, 0.25);
     background: rgba(200, 80, 80, 0.04);
-    padding: 16px 20px;
+    padding: 14px 18px;
   }
 
   .tos-label {
@@ -188,27 +206,17 @@ import Layout from "../layouts/Layout.astro";
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: #c85050;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   .tos {
     list-style: none;
-    counter-reset: tos;
     font-size: 12px;
     color: var(--text);
     line-height: 1.7;
-  }
-
-  .tos li {
-    counter-increment: tos;
-    padding: 2px 0;
-  }
-
-  .tos li::before {
-    content: counter(tos) ". ";
-    color: #c85050;
-    font-weight: 700;
-    display: none;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
   }
 
   .tos li strong {
@@ -218,60 +226,49 @@ import Layout from "../layouts/Layout.astro";
   .tos-note {
     font-size: 11px;
     color: var(--dim);
-    margin-top: 10px;
+    margin-top: 8px;
   }
 
   .footer {
-    position: absolute;
-    bottom: 24px;
-    left: 32px;
     font-size: 11px;
+    padding-bottom: 24px;
   }
 
   @media (max-width: 640px) {
-    .columns {
-      flex-direction: column;
-      gap: 28px;
-    }
-
     .page {
-      padding: 0 20px;
+      display: none;
     }
 
-    .footer {
-      left: 20px;
+    .mobile-block {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 32px;
+      text-align: center;
+      font-size: 14px;
+      color: var(--dim);
+      position: relative;
+      z-index: 1;
     }
   }
 
+  /* dyslexia mode — tighten to keep in viewport */
   :global(html.dyslexia) .page {
-    height: auto;
-    min-height: 100vh;
-    padding-top: 64px;
-    padding-bottom: 48px;
+    gap: 16px;
   }
 
-  :global(html.dyslexia) .columns {
-    gap: 40px;
+  :global(html.dyslexia) .features-grid {
+    gap: 4px 32px;
   }
 
-  :global(html.dyslexia) .footer {
-    position: relative;
-    bottom: auto;
-    left: auto;
-    margin-top: 32px;
-  }
-
-  :global(html.dyslexia) .policy {
+  :global(html.dyslexia) .blurb,
+  :global(html.dyslexia) .sub {
     font-size: 12.5px;
+    line-height: 1.6;
   }
 
   :global(html.dyslexia) .tos {
     font-size: 11.5px;
-  }
-
-  @media (max-width: 640px) {
-    :global(html.dyslexia) .page {
-      padding-top: 72px;
-    }
   }
 </style>
