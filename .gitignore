@@ -1,0 +1,70 @@
+# Dependencies
+node_modules/
+package-lock.json
+.pnpm-store/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+nul
+
+# TypeScript build output
+dist/
+*.tsbuildinfo
+
+# Astro
+site/.astro/
+site/node_modules/
+site/dist/
+
+# Tauri / installer
+installer/src-tauri/target/
+installer/src-tauri/artifacts/
+installer/dist/
+
+# C# build output
+hook/bin/
+hook/obj/
+hook/_out/
+tests/**/bin/
+tests/**/obj/
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Compiled native binaries
+*.so
+*.obj
+*.exe
+*.lib
+*.exp
+tools/*.dll
+
+# Logs and runtime artifacts
+*.log
+
+# Upload / release staging artifacts
+*.sh.upload
+_publish/
+_release_artifacts/
+
+# Temporary media files
+media/tmp*
+
+# Research / Python artifacts
+__pycache__/
+*.pyc
+
+# Packaging build output
+packaging/chocolatey/*.nupkg
+packaging/appimage/*.AppImage
+packaging/flatpak/.flatpak-builder/
+packaging/flatpak/repo/

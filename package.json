@@ -1,0 +1,34 @@
+{
+  "name": "uprooted",
+  "version": "0.5.0",
+  "description": "A client mod framework for Root Communications",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsx scripts/build.ts",
+    "dev": "tsx scripts/build.ts --watch",
+    "install-root": "tsx scripts/install.ts",
+    "uninstall-root": "tsx scripts/uninstall.ts",
+    "site:dev": "pnpm --filter site dev",
+    "site:build": "pnpm --filter site build",
+    "installer:dev": "pnpm --filter uprooted-installer tauri dev",
+    "installer:build": "pnpm --filter uprooted-installer tauri build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.2",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/The-Uprooted-Project/uprooted"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "sharp"]
+  }
+}

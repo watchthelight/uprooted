@@ -1,0 +1,17 @@
+# Normalize all text files to LF in the repo, native on checkout
+* text=auto eol=lf
+
+# Ensure scripts are always LF (even on Windows checkout)
+*.sh text eol=lf
+*.ps1 text eol=crlf
+
+# Binary files — no conversion
+*.dll binary
+*.exe binary
+*.png binary
+*.jpg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary

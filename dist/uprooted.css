@@ -1,0 +1,500 @@
+/* src\plugins\link-embeds\style.css */
+/* Link Embeds -- Discord-style embed card styles */
+
+.uprooted-embed {
+  display: flex;
+  max-width: 520px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  padding: 12px 16px;
+  border-left: 4px solid var(--rootsdk-brand-primary, #3B6AF8);
+  border-radius: 0 4px 4px 0;
+  background: var(--rootsdk-background-secondary, #1A1E24);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
+}
+
+.uprooted-embed--youtube {
+  flex-direction: column;
+}
+
+/* --- Body (text content) --- */
+.uprooted-embed-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* --- Provider name --- */
+.uprooted-embed-provider {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--rootsdk-muted, #72767D);
+}
+
+/* --- Title (clickable link) --- */
+.uprooted-embed-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rootsdk-link, var(--rootsdk-brand-primary, #3B6AF8));
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.uprooted-embed-title:hover {
+  text-decoration: underline;
+}
+
+/* --- Description --- */
+.uprooted-embed-description {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--rootsdk-text-secondary, #B5B5B5);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* --- Thumbnail (generic embeds, right-aligned) --- */
+.uprooted-embed-thumbnail {
+  flex-shrink: 0;
+  margin-left: 16px;
+  align-self: flex-start;
+}
+
+.uprooted-embed-thumbnail img {
+  width: 80px;
+  height: 80px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+/* --- YouTube video container --- */
+.uprooted-embed-video {
+  position: relative;
+  margin-top: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  aspect-ratio: 16 / 9;
+  max-width: 400px;
+  background: #000;
+}
+
+.uprooted-embed-video-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* --- YouTube play button overlay --- */
+.uprooted-embed-yt-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.85;
+  transition: opacity 0.15s;
+  pointer-events: none;
+}
+
+.uprooted-embed-video:hover .uprooted-embed-yt-play {
+  opacity: 1;
+}
+
+/* --- YouTube iframe (after click) --- */
+.uprooted-embed-yt-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+
+/* src\plugins\settings-panel\panel.css */
+/* Settings panel -- Vencord-style sidebar injection styles */
+
+/* --- Sidebar item active state --- */
+.uprooted-sidebar-active {
+  background: var(--rootsdk-background-tertiary, #141820) !important;
+  color: var(--rootsdk-text-primary, #F2F2F2) !important;
+  border-radius: 4px;
+}
+
+/* Ensure our injected section blends in */
+[data-uprooted="section"] {
+  margin-top: 8px;
+}
+
+[data-uprooted="header"] {
+  pointer-events: none;
+}
+
+[data-uprooted="item"] {
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.1s;
+}
+
+[data-uprooted="item"]:hover {
+  background: var(--rootsdk-background-secondary, #1A1E24);
+  border-radius: 4px;
+}
+
+/* --- Version text --- */
+.uprooted-version {
+  opacity: 0.7;
+}
+
+/* --- Content Page Layout --- */
+.uprooted-page {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.uprooted-page-wrapper {
+  padding: 32px 40px;
+  max-width: 740px;
+  width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--rootsdk-text-primary, #F2F2F2);
+}
+
+.uprooted-page-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.uprooted-page-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--rootsdk-text-primary, #F2F2F2);
+}
+
+.uprooted-page-badge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--rootsdk-brand-primary, #3B6AF8);
+  color: #fff;
+}
+
+.uprooted-page-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--rootsdk-text-secondary, #B5B5B5);
+  margin-bottom: 8px;
+}
+
+.uprooted-page-notice {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--rootsdk-muted, #72767D);
+  background: var(--rootsdk-background-secondary, #1A1E24);
+  border: 1px solid var(--rootsdk-border, #242C36);
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-style: italic;
+}
+
+/* --- Sections --- */
+.uprooted-settings-section {
+  margin-bottom: 24px;
+}
+
+.uprooted-settings-section:last-child {
+  margin-bottom: 0;
+}
+
+.uprooted-settings-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rootsdk-muted, #72767D);
+  margin-bottom: 10px;
+}
+
+/* --- Row with label + control --- */
+.uprooted-settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--rootsdk-background-secondary, #1A1E24);
+  border: 1px solid var(--rootsdk-border, #242C36);
+  margin-bottom: 6px;
+}
+
+.uprooted-settings-row-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.uprooted-settings-row-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--rootsdk-text-primary, #F2F2F2);
+}
+
+.uprooted-settings-row-desc {
+  font-size: 12px;
+  color: var(--rootsdk-muted, #72767D);
+  margin-top: 2px;
+}
+
+/* --- Plugin row --- */
+.uprooted-plugin-row .uprooted-settings-row-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* --- Toggle switch --- */
+.uprooted-toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.uprooted-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.uprooted-toggle-track {
+  position: absolute;
+  inset: 0;
+  background: var(--rootsdk-background-tertiary, #141820);
+  border: 1px solid var(--rootsdk-border, #242C36);
+  border-radius: 11px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.uprooted-toggle-track::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: var(--rootsdk-muted, #72767D);
+  border-radius: 50%;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.uprooted-toggle input:checked + .uprooted-toggle-track {
+  background: var(--rootsdk-brand-primary, #3B6AF8);
+  border-color: var(--rootsdk-brand-primary, #3B6AF8);
+}
+
+.uprooted-toggle input:checked + .uprooted-toggle-track::after {
+  transform: translateX(18px);
+  background: #fff;
+}
+
+/* --- Select dropdown --- */
+.uprooted-select {
+  background: var(--rootsdk-input, #0A0F18);
+  border: 1px solid var(--rootsdk-border, #242C36);
+  border-radius: 4px;
+  color: var(--rootsdk-text-primary, #F2F2F2);
+  font-family: inherit;
+  font-size: 13px;
+  padding: 6px 10px;
+  outline: none;
+  cursor: pointer;
+  min-width: 140px;
+}
+
+.uprooted-select:focus {
+  border-color: var(--rootsdk-brand-primary, #3B6AF8);
+}
+
+/* --- Textarea --- */
+.uprooted-textarea {
+  width: 100%;
+  min-height: 100px;
+  max-height: 200px;
+  background: var(--rootsdk-input, #0A0F18);
+  border: 1px solid var(--rootsdk-border, #242C36);
+  border-radius: 6px;
+  color: var(--rootsdk-text-primary, #F2F2F2);
+  font-family: "SF Mono", "Cascadia Mono", "Consolas", monospace;
+  font-size: 12px;
+  padding: 10px;
+  resize: vertical;
+  outline: none;
+  margin-top: 8px;
+  box-sizing: border-box;
+}
+
+.uprooted-textarea:focus {
+  border-color: var(--rootsdk-brand-primary, #3B6AF8);
+}
+
+.uprooted-textarea::placeholder {
+  color: var(--rootsdk-muted, #72767D);
+}
+
+/* --- Link rows --- */
+.uprooted-link {
+  font-size: 13px;
+  color: var(--rootsdk-brand-primary, #3B6AF8);
+  text-decoration: none;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 4px;
+  transition: background 0.1s;
+}
+
+.uprooted-link:hover {
+  background: rgba(59, 106, 248, 0.1);
+  text-decoration: underline;
+}
+
+/* --- Color input (native picker) --- */
+.uprooted-color-input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 40px;
+  height: 28px;
+  border: 1px solid var(--rootsdk-border, #242C36);
+  border-radius: 4px;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.uprooted-color-input::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.uprooted-color-input::-webkit-color-swatch {
+  border: none;
+  border-radius: 2px;
+}
+
+.uprooted-color-input:hover {
+  border-color: var(--rootsdk-brand-primary, #3B6AF8);
+}
+
+/* --- Theme cards --- */
+.uprooted-theme-card {
+  background: var(--rootsdk-background-secondary, #1A1E24);
+  border: 1px solid var(--rootsdk-border, #242C36);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.uprooted-theme-card:hover {
+  border-color: var(--rootsdk-muted, #72767D);
+}
+
+.uprooted-theme-card--active {
+  border-color: var(--rootsdk-brand-primary, #3B6AF8) !important;
+  box-shadow: 0 0 0 1px var(--rootsdk-brand-primary, #3B6AF8),
+              0 0 8px rgba(59, 106, 248, 0.25);
+}
+
+.uprooted-theme-card-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rootsdk-text-primary, #F2F2F2);
+}
+
+.uprooted-theme-card-author {
+  font-size: 12px;
+  color: var(--rootsdk-muted, #72767D);
+  margin-top: 2px;
+}
+
+.uprooted-theme-card-colors {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.uprooted-theme-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* --- Scrollbar for content page --- */
+.uprooted-page::-webkit-scrollbar {
+  width: 6px;
+}
+
+.uprooted-page::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.uprooted-page::-webkit-scrollbar-thumb {
+  background: var(--rootsdk-border, #242C36);
+  border-radius: 3px;
+}
+
+
+/* src\plugins\themes\forest-green.css */
+/*
+ * Forest Green Theme for Root Communications
+ * Overrides Root's CSS variable system with forest green tones.
+ *
+ * Based on reverse-engineering of Root.exe v0.9.86 theme system.
+ * Original CSS variables extracted from binary offset 0x12AE9676.
+ */
+
+:root [data-theme="dark"],
+:root [data-theme="pure-dark"] {
+  /* Brand */
+  --color-brand-primary: #2D7D46;
+  --color-brand-secondary: #7BC67E;
+  --color-brand-tertiary: #3AA55D;
+
+  /* Text */
+  --color-text-primary: #E8F0E8;
+  --color-text-secondary: #A0B8A4;
+  --color-text-tertiary: #6B8B72;
+
+  /* Backgrounds */
+  --color-background-primary: #1A2F23;
+  --color-background-secondary: #1E3528;
+  --color-background-tertiary: #142A1C;
+  --color-input: #122218;
+
+  /* Borders & highlights */
+  --color-border: #2A4A35;
+  --color-highlight-light: rgba(122, 198, 126, 0.04);
+  --color-highlight-normal: rgba(122, 198, 126, 0.10);
+  --color-highlight-strong: rgba(122, 198, 126, 0.19);
+
+  /* Accents */
+  --color-link: #7BC67E;
+  --color-muted: #4A6B52;
+
+  /* Mentions */
+  --color-self-mention: rgba(45, 125, 70, 0.40);
+  --color-community-mention: rgba(122, 198, 126, 0.20);
+  --color-channel-mention: rgba(58, 165, 93, 0.30);
+}

@@ -1,0 +1,100 @@
+[
+  {
+    "name": "default",
+    "display_name": "Default Dark",
+    "description": "Root's built-in dark theme",
+    "author": "Root Communications",
+    "variables": {},
+    "preview_colors": {
+      "background": "#0D1521",
+      "text": "#F2F2F2",
+      "accent": "#3B6AF8",
+      "border": "#242C36"
+    }
+  },
+  {
+    "name": "crimson",
+    "display_name": "Crimson",
+    "description": "Deep red accent theme",
+    "author": "watchthelight",
+    "variables": {
+      "--rootsdk-brand-primary": "#C42B1C",
+      "--rootsdk-brand-secondary": "#D94A3D",
+      "--rootsdk-brand-tertiary": "#A32417",
+      "--rootsdk-background-primary": "#241414",
+      "--rootsdk-background-secondary": "#2C1818",
+      "--rootsdk-background-tertiary": "#1A0E0E",
+      "--rootsdk-input": "#1E1010",
+      "--rootsdk-border": "#402828",
+      "--rootsdk-link": "#E06B60",
+      "--rootsdk-muted": "#6F5050"
+    },
+    "preview_colors": {
+      "background": "#241414",
+      "text": "#F0EAEA",
+      "accent": "#C42B1C",
+      "border": "#402828"
+    }
+  },
+  {
+    "name": "loki",
+    "display_name": "Loki",
+    "description": "Gold and green",
+    "author": "watchthelight",
+    "variables": {
+      "--rootsdk-brand-primary": "#2A5A40",
+      "--rootsdk-brand-secondary": "#3D7050",
+      "--rootsdk-brand-tertiary": "#1E402F",
+      "--rootsdk-background-primary": "#0F1210",
+      "--rootsdk-background-secondary": "#151A15",
+      "--rootsdk-background-tertiary": "#0A0D0A",
+      "--rootsdk-input": "#0C0F0C",
+      "--rootsdk-border": "#3D4A35",
+      "--rootsdk-link": "#508A62",
+      "--rootsdk-muted": "#4A5A42"
+    },
+    "preview_colors": {
+      "background": "#0F1210",
+      "text": "#F0ECE0",
+      "accent": "#2A5A40",
+      "border": "#3D4A35"
+    }
+  },
+  {
+    "name": "cosmic-smoothie",
+    "display_name": "Cosmic Smoothie",
+    "description": "Deep purple space",
+    "author": "watchthelight",
+    "variables": {
+      "--rootsdk-brand-primary": "#7328BA",
+      "--rootsdk-brand-secondary": "#8A3FD2",
+      "--rootsdk-brand-tertiary": "#5C1E98",
+      "--rootsdk-background-primary": "#0A041E",
+      "--rootsdk-background-secondary": "#100822",
+      "--rootsdk-background-tertiary": "#060216",
+      "--rootsdk-input": "#080318",
+      "--rootsdk-border": "#302040",
+      "--rootsdk-link": "#A15DE6",
+      "--rootsdk-muted": "#584870"
+    },
+    "preview_colors": {
+      "background": "#0A041E",
+      "text": "#F4ECF8",
+      "accent": "#7328BA",
+      "border": "#302040"
+    }
+  },
+  {
+    "name": "custom",
+    "display_name": "Custom",
+    "description": "User-defined accent and background colors",
+    "author": "You",
+    "variables": {},
+    "preview_colors": {
+      "background": "#0D1521",
+      "text": "#F2F2F2",
+      "accent": "#3B6AF8",
+      "border": "#242C36"
+    }
+  }
+]

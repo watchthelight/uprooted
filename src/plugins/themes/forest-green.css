@@ -1,0 +1,41 @@
+/*
+ * Forest Green Theme for Root Communications
+ * Overrides Root's CSS variable system with forest green tones.
+ *
+ * Based on reverse-engineering of Root.exe v0.9.86 theme system.
+ * Original CSS variables extracted from binary offset 0x12AE9676.
+ */
+
+:root [data-theme="dark"],
+:root [data-theme="pure-dark"] {
+  /* Brand */
+  --color-brand-primary: #2D7D46;
+  --color-brand-secondary: #7BC67E;
+  --color-brand-tertiary: #3AA55D;
+
+  /* Text */
+  --color-text-primary: #E8F0E8;
+  --color-text-secondary: #A0B8A4;
+  --color-text-tertiary: #6B8B72;
+
+  /* Backgrounds */
+  --color-background-primary: #1A2F23;
+  --color-background-secondary: #1E3528;
+  --color-background-tertiary: #142A1C;
+  --color-input: #122218;
+
+  /* Borders & highlights */
+  --color-border: #2A4A35;
+  --color-highlight-light: rgba(122, 198, 126, 0.04);
+  --color-highlight-normal: rgba(122, 198, 126, 0.10);
+  --color-highlight-strong: rgba(122, 198, 126, 0.19);
+
+  /* Accents */
+  --color-link: #7BC67E;
+  --color-muted: #4A6B52;
+
+  /* Mentions */
+  --color-self-mention: rgba(45, 125, 70, 0.40);
+  --color-community-mention: rgba(122, 198, 126, 0.20);
+  --color-channel-mention: rgba(58, 165, 93, 0.30);
+}
