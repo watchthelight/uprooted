@@ -1,0 +1,20 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0
+
+WORKDIR /app
+
+# Copy hook source and test project
+COPY hook/ hook/
+COPY tests/UprootedTests/ tests/UprootedTests/
+
+# Ensure temp directory exists for tests
+ENV XDG_DATA_HOME=/tmp/uprooted-test
+RUN mkdir -p /tmp/uprooted-test
+
+WORKDIR /app/tests/UprootedTests
+
+# Restore + run tests with coverage
+RUN dotnet test \
+    --collect:"XPlat Code Coverage" \
+    --results-directory /coverage \
+    --logger "console;verbosity=normal" \
+    -p:ContinuousIntegrationBuild=true
